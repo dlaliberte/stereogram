@@ -18,6 +18,8 @@ function App() {
   const [depthScale, setDepthScale] = useState(0.3);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showAlignmentFrame, setShowAlignmentFrame] = useState(true);
+  const [alignmentType, setAlignmentType] = useState<'frames' | 'dots'>('dots');
+  const [colorDisparity, setColorDisparity] = useState(0.3);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -126,7 +128,9 @@ function App() {
         eyeSeparation,
         depthScale,
         viewingMode,
-        showAlignmentFrame
+        showAlignmentFrame,
+        alignmentType,
+        colorDisparity: inputMode === 'shape' ? 0.8 : colorDisparity
       };
 
       let stereogramDataUrl: string;
@@ -323,6 +327,34 @@ function App() {
               </label>
             </div>
 
+            {showAlignmentFrame && (
+              <div className="alignment-type-selection">
+                <h4>Alignment Guide Type</h4>
+                <div className="radio-group">
+                  <label>
+                    <input
+                      type="radio"
+                      value="dots"
+                      checked={alignmentType === 'dots'}
+                      onChange={(e) => setAlignmentType(e.target.value as 'frames' | 'dots')}
+                    />
+                    <span>Alignment Dots</span>
+                    <small>Simple dots separated by pattern width</small>
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      value="frames"
+                      checked={alignmentType === 'frames'}
+                      onChange={(e) => setAlignmentType(e.target.value as 'frames' | 'dots')}
+                    />
+                    <span>Full Frames</span>
+                    <small>Complete frames around the stereogram area</small>
+                  </label>
+                </div>
+              </div>
+            )}
+
             <div className="advanced-controls">
               <button
                 className="toggle-advanced"
@@ -333,12 +365,26 @@ function App() {
 
               {showAdvanced && (
                 <div className="advanced-settings">
+                    <div className="setting">
+                      <label>
+                        Color Disparity: {colorDisparity.toFixed(2)}
+                        <input
+                          type="range"
+                          min="0.05"
+                          max="1.0"
+                          step="0.1"
+                          value={colorDisparity}
+                          onChange={(e) => setColorDisparity(Number(e.target.value))}
+                        />
+                        <small>Lower values reduce color noise for images</small>
+                      </label>
+                    </div>
                   <div className="setting">
                     <label>
                       Eye Separation: {eyeSeparation}px
                       <input
                         type="range"
-                        min="30"
+                        min="0"
                         max="120"
                         value={eyeSeparation}
                         onChange={(e) => setEyeSeparation(Number(e.target.value))}
@@ -427,6 +473,7 @@ function App() {
       </main>
     </div>
   );
+
 }
 
 export default App;
